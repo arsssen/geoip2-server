@@ -40,7 +40,13 @@ Run starting with existing db, but periodicaly check for updates and download ne
 docker run --name my-geoip-db -e DB_FILE=/db/GeoLite2-City.mmdb -v /etc:/db -e LICENSE_KEY=PxnS34uOcQEtCPAA  arsssen/geoip2-server:latest
 ```
 
+## Embedding in your app
 
+```bash
+go get  github.com/arsssen/geoip2-server
+```
+
+See `main.go` for example how to use.
 
 
 ## HTTP API

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/alexflint/go-arg"
@@ -15,5 +16,5 @@ func main() {
 		UpdatePeriod string `arg:"env:UPDATE_PERIOD, -U, --update-period" default:"240h"`
 	}
 	arg.MustParse(&args)
-	log.Fatal(app.Run(app.Opts(args), log.Printf))
+	log.Fatal(app.Run(context.Background(), app.Opts(args), log.Printf))
 }

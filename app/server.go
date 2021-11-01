@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -25,7 +26,7 @@ type Opts struct {
 }
 
 //Run starts the server with given options
-func Run(args Opts, loggerFunc ...func(format string, v ...interface{})) error {
+func Run(ctx context.Context, args Opts, loggerFunc ...func(format string, v ...interface{})) error {
 	log = func(format string, v ...interface{}) {}
 	if len(loggerFunc) > 0 {
 		log = loggerFunc[0]
@@ -48,13 +49,13 @@ func Run(args Opts, loggerFunc ...func(format string, v ...interface{})) error {
 		if e != nil {
 			return fmt.Errorf("invalid update period: %s", args.UpdatePeriod)
 		}
-		go startUpdater(period, args.LicenseKey, setDB)
+		go startUpdater(ctx, period, args.LicenseKey, setDB)
 	}
 	if args.DBFile == "" && args.LicenseKey == "" {
 		return fmt.Errorf("cannot run without license key or existing db file")
 	}
 
-	return s.start()
+	return s.start(ctx)
 
 }
 
@@ -73,10 +74,17 @@ type server struct {
 	cache      *cache.Cache
 }
 
-func (s *server) start() error {
+func (s *server) start(ctx context.Context) error {
+	server := http.Server{
+		Addr: s.listenAddr,
+	}
 	http.HandleFunc("/", s.locationHandler)
+	go func() {
+		<-ctx.Done()
+		log("shutting down http server: %s", server.Shutdown(ctx))
+	}()
 	log("Starting server at %s", s.listenAddr)
-	return http.ListenAndServe(s.listenAddr, nil)
+	return server.ListenAndServe()
 }
 
 func (s *server) SetDB(db *maxminddb.Reader) {

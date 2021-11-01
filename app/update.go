@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"time"
 )
@@ -10,12 +11,18 @@ const shaURL = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLi
 const downloadPath = "./downloaded.tgz"
 const dbFileName = "GeoLite2-City.mmdb" // file name inside the downloaded tgz archive
 
-func startUpdater(period time.Duration, licenseKey string, update func(string)) {
+func startUpdater(ctx context.Context, period time.Duration, licenseKey string, update func(string)) {
 	log("starting updater (%s)", period)
 	t := time.NewTicker(period)
 	lastSChecksum := ""
 
 	for ; true; <-t.C {
+		select {
+		case <-ctx.Done():
+			log("stopping updater (ctx cancelled)")
+		default:
+
+		}
 		sha, e := getContent(fmt.Sprintf(shaURL, licenseKey))
 		if e != nil {
 			log("cannot get sha: %s", e)
