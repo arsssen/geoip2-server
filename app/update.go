@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/oschwald/maxminddb-golang"
 )
 
 const downloadURL = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=%s&suffix=tar.gz"
@@ -11,38 +13,50 @@ const shaURL = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLi
 const downloadPath = "./downloaded.tgz"
 const dbFileName = "GeoLite2-City.mmdb" // file name inside the downloaded tgz archive
 
-func startUpdater(ctx context.Context, period time.Duration, licenseKey string, update func(string)) {
-	log("starting updater (%s)", period)
+func (s *resolver) startUpdater(ctx context.Context, period time.Duration, licenseKey string, update func(string)) {
+	s.logger("starting updater (%s)", period)
 	t := time.NewTicker(period)
 	lastSChecksum := ""
 
 	for ; true; <-t.C {
 		select {
 		case <-ctx.Done():
-			log("stopping updater (ctx cancelled)")
+			s.logger("stopping updater (ctx cancelled)")
 		default:
 
 		}
 		sha, e := getContent(fmt.Sprintf(shaURL, licenseKey))
 		if e != nil {
-			log("cannot get sha: %s", e)
+			s.logger("cannot get sha: %s", e)
 			continue
 		}
-		log("sha: %s", sha)
+		s.logger("sha: %s", sha)
 		if sha == lastSChecksum {
-			log("no update")
+			s.logger("no update")
 			continue
 		}
 		lastSChecksum = sha
-		if e = downloadFile(downloadPath, fmt.Sprintf(downloadURL, licenseKey)); e != nil {
-			log("download error: %s", e)
+		if e = s.downloadFile(downloadPath, fmt.Sprintf(downloadURL, licenseKey)); e != nil {
+			s.logger("download error: %s", e)
 			continue
 		}
-		newFile, e := extractTarGz(downloadPath, dbFileName)
+		newFile, e := s.extractTarGz(downloadPath, dbFileName)
 		if e != nil {
-			log("extract error: %s", e)
+			s.logger("extract error: %s", e)
 			continue
 		}
 		update(newFile)
 	}
+}
+
+func (s *resolver) setDB(db *maxminddb.Reader) {
+	s.logger("using db: %+v", db.Metadata)
+	s.dbMutex.Lock()
+	if s.db != nil {
+		s.logger("closing previous db: %+v", s.db.Metadata)
+		s.db.Close()
+	}
+	s.db = db
+	s.dbMutex.Unlock()
+	s.cache.Flush()
 }

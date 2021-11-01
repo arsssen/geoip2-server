@@ -29,8 +29,8 @@ func getContent(url string) (string, error) {
 
 }
 
-func downloadFile(filepath string, url string) (err error) {
-	log("downloading from %s", url)
+func (s resolver) downloadFile(filepath string, url string) (err error) {
+	s.logger("downloading from %s", url)
 	// Create the file
 	out, err := os.Create(filepath)
 	if err != nil {
@@ -55,7 +55,7 @@ func downloadFile(filepath string, url string) (err error) {
 	return nil
 }
 
-func extractTarGz(path, filename string) (string, error) {
+func (s resolver) extractTarGz(path, filename string) (string, error) {
 	gzipStream, err := os.Open(path)
 	if err != nil {
 		fmt.Println("error")
@@ -81,7 +81,7 @@ func extractTarGz(path, filename string) (string, error) {
 		switch header.Typeflag {
 		case tar.TypeReg:
 			if filepath.Base(header.Name) != filename {
-				log("skipping file: %s", header.Name)
+				s.logger("skipping file: %s", header.Name)
 				if _, err := io.Copy(io.Discard, tarReader); err != nil { //nolint:gosec
 					return "", fmt.Errorf("extractTarGz: dCopy() failed: %w", err)
 				}
@@ -89,7 +89,7 @@ func extractTarGz(path, filename string) (string, error) {
 			}
 			targetName := header.ModTime.Format("02_01_2006") + ".mmdb"
 			if _, err := os.Stat(targetName); err == nil {
-				log("%s exists, skipping extraction", targetName)
+				s.logger("%s exists, skipping extraction", targetName)
 				return targetName, nil
 			}
 			outFile, err := os.Create(targetName)
@@ -104,7 +104,7 @@ func extractTarGz(path, filename string) (string, error) {
 			return targetName, nil
 
 		default:
-			log("found %s in archive", header.Name)
+			s.logger("found %s in archive", header.Name)
 		}
 
 	}

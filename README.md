@@ -1,7 +1,10 @@
 # geoip2-server
-HTTP server which provides API to resolve IP addresses to locations using Maxmind's GeoLite2 City db.
 
-Can automatically get(and update) the database using the provided license key, or use existing database file.
+Provides API to resolve IP addresses to locations using Maxmind's GeoLite2 City db.
+
+Can be used as a library or standalone HTTP server.
+
+Can automatically get(and update) the database using the provided license key or use existing database file.
 
 ## Configuration
 
