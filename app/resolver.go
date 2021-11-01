@@ -20,7 +20,12 @@ func NewResolver(ctx context.Context, args Opts) (*resolver, error) {
 	if args.Logger != nil {
 		logger = args.Logger
 	}
-	s := newResolver(ctx, logger)
+	s := resolver{
+		ctx:     ctx,
+		dbMutex: &sync.RWMutex{},
+		cache:   cache.New(5*time.Hour, time.Hour),
+		logger:  logger,
+	}
 	setDB := func(filename string) {
 		logger("opening db file %s", filename)
 		db, err := maxminddb.Open(filename)
@@ -48,15 +53,6 @@ func NewResolver(ctx context.Context, args Opts) (*resolver, error) {
 
 }
 
-func newResolver(ctx context.Context, logger func(format string, v ...interface{})) resolver {
-	return resolver{
-		ctx:     ctx,
-		dbMutex: &sync.RWMutex{},
-		cache:   cache.New(5*time.Hour, time.Hour),
-		logger:  logger,
-	}
-}
-
 type resolver struct {
 	ctx     context.Context
 	db      *maxminddb.Reader
@@ -65,6 +61,7 @@ type resolver struct {
 	logger  func(format string, v ...interface{})
 }
 
+//GetLocationJSON returns JSON-encoded location for given IP
 func (s *resolver) GetLocationJSON(ip net.IP, format string) ([]byte, error) {
 	cacheKey := ip.String() + format
 	rec, found := s.cache.Get(cacheKey)
