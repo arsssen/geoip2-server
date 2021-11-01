@@ -11,7 +11,7 @@ Configuration can be passed as command-line flags or environment variables
 | Env  	| Flag  	|   Example	|   Description	|
 |---	|---	|---	|---	|
 | `LICENSE_KEY`  	| `-L` or `--license-key`   	|  `PxnS34uOcQEtCPAA` 	| MaxMind license key  	|
-| `LISTEN_ADDR`  	| `-A` or `--listen-addr`  	| `":8080"`   	| Address:port for http server to listen on  	|   	|
+| `LISTEN_ADDR`  	| `-A` or `--listen-addr`  	| `":8080"`   	| Address:port for http server to listen on. Default: :8080  	|   	|
 | `DB_FILE`  	|  `-D` or `--db-file` 	| `/etc/GeoLite2-City.mmdb`  	| Path to existing db file  	|   	|
 | `UPDATE_PERIOD`  	|  `-U` or `--update-period` 	| `10h30m`  	| Time period to check for updates/download updted db. Default: 10 days  	|   	|
  
