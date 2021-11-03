@@ -6,6 +6,7 @@ type Opts struct {
 	DBFile       string
 	UpdatePeriod string
 	Logger       func(format string, v ...interface{})
+	WorkingDir   string
 }
 
 type location struct {

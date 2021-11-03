@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"path"
 	"time"
 
 	"github.com/oschwald/maxminddb-golang"
@@ -36,11 +37,12 @@ func (s *resolver) startUpdater(ctx context.Context, period time.Duration, licen
 			continue
 		}
 		lastSChecksum = sha
-		if e = s.downloadFile(downloadPath, fmt.Sprintf(downloadURL, licenseKey)); e != nil {
+		downloadedFile := path.Join(s.workDir, downloadPath)
+		if e = s.downloadFile(downloadedFile, fmt.Sprintf(downloadURL, licenseKey)); e != nil {
 			s.logger("download error: %s", e)
 			continue
 		}
-		newFile, e := s.extractTarGz(downloadPath, dbFileName)
+		newFile, e := s.extractTarGz(downloadedFile, dbFileName)
 		if e != nil {
 			s.logger("extract error: %s", e)
 			continue

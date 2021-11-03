@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -55,8 +56,8 @@ func (s resolver) downloadFile(filepath string, url string) (err error) {
 	return nil
 }
 
-func (s resolver) extractTarGz(path, filename string) (string, error) {
-	gzipStream, err := os.Open(path)
+func (s resolver) extractTarGz(src, filename string) (string, error) {
+	gzipStream, err := os.Open(src)
 	if err != nil {
 		fmt.Println("error")
 	}
@@ -87,7 +88,7 @@ func (s resolver) extractTarGz(path, filename string) (string, error) {
 				}
 				continue
 			}
-			targetName := header.ModTime.Format("02_01_2006") + ".mmdb"
+			targetName := path.Join(s.workDir, header.ModTime.Format("02_01_2006")+".mmdb")
 			if _, err := os.Stat(targetName); err == nil {
 				s.logger("%s exists, skipping extraction", targetName)
 				return targetName, nil

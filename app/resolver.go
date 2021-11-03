@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
 	"sync"
 	"time"
 
@@ -25,6 +26,10 @@ func NewResolver(ctx context.Context, args Opts) (*resolver, error) {
 		dbMutex: &sync.RWMutex{},
 		cache:   cache.New(5*time.Hour, time.Hour),
 		logger:  logger,
+		workDir: os.TempDir(),
+	}
+	if args.WorkingDir != "" {
+		s.workDir = args.WorkingDir
 	}
 	setDB := func(filename string) {
 		logger("opening db file %s", filename)
@@ -59,6 +64,7 @@ type resolver struct {
 	dbMutex *sync.RWMutex
 	cache   *cache.Cache
 	logger  func(format string, v ...interface{})
+	workDir string
 }
 
 //GetLocationJSON returns JSON-encoded location for given IP

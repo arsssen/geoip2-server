@@ -14,6 +14,7 @@ func main() {
 		ListenAddr   string `arg:"env:LISTEN_ADDR, -A, --listen-addr" default:":8080"`
 		DBFile       string `arg:"env:DB_FILE, -D, --db-file"`
 		UpdatePeriod string `arg:"env:UPDATE_PERIOD, -U, --update-period" default:"240h"`
+		WorkDir      string `arg:"env:WORK_DIR, -W, --work-dir" default:""`
 	}
 	arg.MustParse(&args)
 
@@ -22,6 +23,7 @@ func main() {
 		DBFile:       args.DBFile,
 		UpdatePeriod: args.UpdatePeriod,
 		Logger:       log.Printf,
+		WorkingDir:   args.WorkDir,
 	})
 
 	// example getting ip directly, without http handler:
